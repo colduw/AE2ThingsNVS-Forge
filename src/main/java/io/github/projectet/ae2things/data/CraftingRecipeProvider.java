@@ -1,26 +1,28 @@
 package io.github.projectet.ae2things.data;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
 
 import io.github.projectet.ae2things.AE2Things;
 import io.github.projectet.ae2things.item.AETItems;
-
-import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.MultiRegistryBootstrap;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.common.Tags;
 
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 
 public class CraftingRecipeProvider extends RecipeProvider {
-    public CraftingRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
-        super(registries, output);
+    public CraftingRecipeProvider(BootstrapContext<Recipe<?>> recipeOutput, BootstrapContext<Advancement> advancementOutput) {
+        super(recipeOutput, advancementOutput);
     }
 
     @Override
@@ -75,19 +77,20 @@ public class CraftingRecipeProvider extends RecipeProvider {
         }
     }
 
-    public static class Runner extends RecipeProvider.Runner {
-        public Runner(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-            super(output, registries);
-        }
+    // Construct the registry bootstrap.
+    public static MultiRegistryBootstrap create() {
+        return new MultiRegistryBootstrap() {
+            @Override
+            public Set<ResourceKey<? extends Registry<?>>> requestedRegistries() {
+                // Return the registries we are adding entries to.
+                return Set.of(Registries.RECIPE, Registries.ADVANCEMENT);
+            }
 
-        @Override
-        protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
-            return new CraftingRecipeProvider(registries, output);
-        }
-
-        @Override
-        public String getName() {
-            return "AE2 Things Recipes";
-        }
+            @Override
+            public void run(MultiRegistryBootstrap.BootstrapGetter registries) {
+                // Run the recipe provider.
+                new CraftingRecipeProvider(registries.get(Registries.RECIPE), registries.get(Registries.ADVANCEMENT)).buildRecipes();
+            }
+        };
     }
 }

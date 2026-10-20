@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "ae2things:disk_drive_256k"
+        "recipes": "ae2things:disk_drive_256k"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

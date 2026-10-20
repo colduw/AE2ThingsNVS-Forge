@@ -15,6 +15,7 @@ import io.github.projectet.ae2things.util.DataStorage;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
@@ -144,15 +145,15 @@ public class DISKDrive extends Item implements IDISKCellItem, AEToolItem {
                     playerInventory.setItem(playerInventory.getSelectedSlot(), ItemStack.EMPTY);
 
                     // drop core
-                    playerInventory.placeItemBackInInventory(new ItemStack(coreItem));
+                    playerInventory.placeItemBackInInventory(new ItemStack(coreItem), Prediction.SERVER_ONLY);
 
                     // drop upgrades
                     for (ItemStack upgrade : this.getUpgrades(stack)) {
-                        playerInventory.placeItemBackInInventory(upgrade);
+                        playerInventory.placeItemBackInInventory(upgrade, Prediction.SERVER_ONLY);
                     }
 
                     // drop empty storage cell case
-                    playerInventory.placeItemBackInInventory(new ItemStack(AETItems.DISK_HOUSING.get()));
+                    playerInventory.placeItemBackInInventory(new ItemStack(AETItems.DISK_HOUSING.get()), Prediction.SERVER_ONLY);
 
                     return true;
                 }

@@ -1,13 +1,8 @@
 package io.github.projectet.ae2things.data;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
-
 import io.github.projectet.ae2things.AE2Things;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.PackOutput;
+import net.minecraft.core.RegistrySetBuilder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -16,18 +11,12 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 public class AE2ThingsDataGenerator {
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent.Server event) {
-        var generator = event.getGenerator();
-        var registries = event.getLookupProvider();
+        var registries = new RegistrySetBuilder();
+        var pack = event.getDefaultPackGenerator();
 
-        var pack = generator.getVanillaPack(true);
+        registries.add(CraftingRecipeProvider.create());
 
         // Recipes
-        pack.addProvider(bindRegistries(CraftingRecipeProvider.Runner::new, registries));
-    }
-
-    private static <T extends DataProvider> DataProvider.Factory<T> bindRegistries(
-            BiFunction<PackOutput, CompletableFuture<HolderLookup.Provider>, T> factory,
-            CompletableFuture<HolderLookup.Provider> factories) {
-        return packOutput -> factory.apply(packOutput, factories);
+        pack.createReloadableRegistryObjects(registries);
     }
 }

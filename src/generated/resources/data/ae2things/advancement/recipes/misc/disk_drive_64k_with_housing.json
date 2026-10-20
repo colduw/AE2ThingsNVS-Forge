@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "ae2things:disk_drive_64k_with_housing"
+        "recipes": "ae2things:disk_drive_64k_with_housing"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
