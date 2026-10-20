@@ -1,28 +1,15 @@
 plugins {
-    id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.15-beta'
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'net.neoforged.moddev' version '2.0.148'
 }
 
 group = "dev.technici4n"
-version = System.getenv("AE2THINGS_VERSION") ?: "0.0.0"
+version = "${ae2_things_version}"
 
 repositories {
     maven {
-        name = "Modmaven"
-        url = uri("https://modmaven.dev/")
-
+        url = "https://cursemaven.com"
         content {
-            includeGroup("appeng")
-        }
-    }
-
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
-        content {
-            includeGroup "dev.emi"
+            includeGroup "curse.maven"
         }
     }
 }
@@ -33,8 +20,10 @@ configurations {
 }
 
 dependencies {
-    implementation "appeng:appliedenergistics2:${ae2_version}"
-    localRuntimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    implementation "curse.maven:applied-energistics-2-223794:${ae2_version}"
+
+    compileOnly "curse.maven:guideme-1173950:${guideme_version}"
+    runtimeOnly "curse.maven:guideme-1173950:${guideme_version}"
 }
 
 sourceSets {
@@ -47,7 +36,7 @@ sourceSets {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -83,7 +72,7 @@ neoForge {
         }
 
         data {
-            data()
+            serverData()
             // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
             // workingDirectory project.file('run-data')
 
@@ -95,58 +84,4 @@ neoForge {
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-}
-
-/////////////
-// Spotless
-spotless {
-    java {
-        target("src/main/java/**/*.java")
-
-        endWithNewline()
-        indentWithSpaces()
-        removeUnusedImports()
-        toggleOffOn()
-        eclipse().configFile("codeformat/codeformat.xml")
-        importOrderFile("codeformat/ae2.importorder")
-    }
-
-    format("json") {
-        target("src/*/resources/**/*.json")
-        targetExclude("src/generated/resources/**")
-        prettier().config(parser: "json")
-    }
-}
-
-////////////////
-// CurseForge
-System.getenv("CURSEFORGE")?.with { String key ->
-    curseforge {
-        apiKey = key
-
-        project {
-            id = "609977"
-            changelogType = "markdown"
-            changelog = "View changelog at [the release page](https://github.com/Technici4n/AE2Things-Forge/releases/tag/${version})"
-
-            if (version.contains("alpha")) {
-                releaseType = "alpha"
-            } else if (version.contains("beta")) {
-                releaseType = "beta"
-            } else {
-                releaseType = "release"
-            }
-
-            addGameVersion("${minecraft_version}")
-            addGameVersion("NeoForge")
-
-            mainArtifact(jar) {
-                displayName = "AE2 Things v${version}"
-
-                relations {
-                    requiredDependency("applied-energistics-2")
-                }
-            }
-        }
-    }
 }

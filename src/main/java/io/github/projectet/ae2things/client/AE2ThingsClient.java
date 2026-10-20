@@ -1,9 +1,15 @@
 package io.github.projectet.ae2things.client;
 
-import io.github.projectet.ae2things.AE2Things;
-import io.github.projectet.ae2things.item.AETItems;
-import io.github.projectet.ae2things.item.DISKDrive;
+import javax.annotation.Nullable;
 
+import com.mojang.serialization.MapCodec;
+
+import io.github.projectet.ae2things.AE2Things;
+import io.github.projectet.ae2things.item.DISKDrive;
+import net.minecraft.client.color.item.ItemTintSource;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -15,9 +21,20 @@ public class AE2ThingsClient {
         eventBus.addListener(AE2ThingsClient::registerItemColors);
     }
 
-    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        event.register(DISKDrive::getColor, AETItems.DISK_DRIVE_1K.get(),
-                AETItems.DISK_DRIVE_4K.get(), AETItems.DISK_DRIVE_16K.get(), AETItems.DISK_DRIVE_64K.get(),
-                AETItems.DISK_DRIVE_256K.get());
+    public static void registerItemColors(RegisterColorHandlersEvent.ItemTintSources event) {
+        event.register(AE2Things.id("disk_color"), DiskColor.MAP_CODEC);
+    }
+
+    public record DiskColor() implements ItemTintSource {
+        public static final MapCodec<DiskColor> MAP_CODEC = MapCodec.unit(new DiskColor());
+
+        @Override 
+        public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+            return DISKDrive.getColor(var1, 1);
+        }
+
+        public MapCodec<DiskColor> type() {
+            return MAP_CODEC;
+        }
     }
 }

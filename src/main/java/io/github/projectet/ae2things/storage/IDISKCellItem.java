@@ -1,6 +1,6 @@
 package io.github.projectet.ae2things.storage;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 
@@ -76,7 +76,7 @@ public interface IDISKCellItem extends ICellWorkbenchItem {
     /**
      * Convenient helper to append useful tooltip information.
      */
-    default void addCellInformationToTooltip(ItemStack is, List<Component> lines) {
+    default void addCellInformationToTooltip(ItemStack is, Consumer<Component> lines) {
         Preconditions.checkArgument(is.getItem() == this);
         DISKCellHandler.INSTANCE.addCellInformationToTooltip(is, lines);
     }

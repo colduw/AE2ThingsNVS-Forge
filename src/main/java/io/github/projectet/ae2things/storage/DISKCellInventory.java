@@ -12,8 +12,10 @@ import io.github.projectet.ae2things.util.StorageManager;
 
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
-
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -184,7 +186,11 @@ public class DISKCellInventory implements StorageCell {
 
             if (amount > 0) {
                 itemCount += amount;
-                keys.add(entry.getKey().toTagGeneric(storageManager.getRegistries()));
+
+                TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, storageManager.getRegistries());
+                entry.getKey().toTagGeneric(output);
+                keys.add(output.buildResult());
+
                 amounts.add(amount);
             }
         }
@@ -296,7 +302,7 @@ public class DISKCellInventory implements StorageCell {
 
         for (int i = 0; i < amounts.length; i++) {
             var amount = amounts[i];
-            AEKey key = AEKey.fromTagGeneric(registries, tags.getCompound(i));
+            AEKey key = AEKey.fromTagGeneric(TagValueInput.create(ProblemReporter.DISCARDING, registries, tags.getCompound(i).get()));
 
             if (amount <= 0 || key == null) {
                 corruptedTag = true;

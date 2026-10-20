@@ -1,6 +1,6 @@
 package io.github.projectet.ae2things.storage;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 import io.github.projectet.ae2things.AE2Things;
 import io.github.projectet.ae2things.item.DISKDrive;
@@ -29,7 +29,7 @@ public class DISKCellHandler implements ICellHandler {
         return DISKCellInventory.createInventory(is, container, AE2Things.currentStorageManager());
     }
 
-    public void addCellInformationToTooltip(ItemStack stack, List<Component> lines) {
+    public void addCellInformationToTooltip(ItemStack stack, Consumer<Component> lines) {
         // Explicitly don't pass a storage manager since this only needs info stored on the item
         var handler = DISKCellInventory.createInventory(stack, null, null);
 
@@ -37,9 +37,8 @@ public class DISKCellHandler implements ICellHandler {
             return;
 
         if (handler.hasDiskUUID()) {
-            lines.add(Component.literal("Disk UUID: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(handler.getDiskUUID().toString()).withStyle(ChatFormatting.AQUA)));
-            lines.add(Tooltips.bytesUsed(handler.getNbtItemCount(), handler.getTotalBytes()));
+            lines.accept(Component.literal("Disk UUID: ").withStyle(ChatFormatting.GRAY).append(Component.literal(handler.getDiskUUID().toString()).withStyle(ChatFormatting.AQUA)));
+            lines.accept(Tooltips.bytesUsed(handler.getNbtItemCount(), handler.getTotalBytes()));
         }
 
         if (handler.isPreformatted()) {
@@ -48,10 +47,9 @@ public class DISKCellHandler implements ICellHandler {
                     .text();
 
             if (handler.isFuzzy()) {
-                lines.add(GuiText.Partitioned.withSuffix(" - ").append(list).append(" ").append(GuiText.Fuzzy.text()));
+                lines.accept(GuiText.Partitioned.withSuffix(" - ").append(list).append(" ").append(GuiText.Fuzzy.text()));
             } else {
-                lines.add(
-                        GuiText.Partitioned.withSuffix(" - ").append(list).append(" ").append(GuiText.Precise.text()));
+                lines.accept(GuiText.Partitioned.withSuffix(" - ").append(list).append(" ").append(GuiText.Precise.text()));
             }
         }
     }

@@ -14,9 +14,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.ClickEvent.CopyToClipboard;
+import net.minecraft.network.chat.HoverEvent.ShowText;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -37,7 +38,7 @@ public class Command {
             .then(Commands.literal("recover")
                     .then(Commands
                             .argument("uuid", UuidArgument.uuid())
-                            .requires(serverCommandSource -> serverCommandSource.hasPermission(2))
+                            .requires(serverCommandSource -> serverCommandSource.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                             .executes(context -> spawnDrive(context, context.getArgument("uuid", UUID.class)))))
             .build();
 
@@ -71,11 +72,11 @@ public class Command {
             player.addItem(stack);
 
             context.getSource().sendSuccess(
-                    () -> Component.translatable("command.ae2things.recover_success", player.getDisplayName(), uuid),
+                    () -> Component.translatable("command.ae2things.recover_success", player.getDisplayName(), uuid.toString()),
                     true);
             return 0;
         } else {
-            context.getSource().sendFailure(Component.translatable("command.ae2things.recover_fail", uuid));
+            context.getSource().sendFailure(Component.translatable("command.ae2things.recover_fail", uuid.toString()));
             return 1;
         }
     }
@@ -101,9 +102,8 @@ public class Command {
 
     private static Component copyToClipboard(String string) {
         return Component.literal(string).withStyle(style -> style
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, string))
-                .withHoverEvent(
-                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))
+                .withClickEvent(new CopyToClipboard(string))
+                .withHoverEvent(new ShowText(Component.translatable("chat.copy.click")))
                 .withInsertion(string)
                 .withColor(ChatFormatting.GREEN));
     }

@@ -2,9 +2,9 @@ package io.github.projectet.ae2things.item;
 
 import static appeng.api.storage.StorageCells.getCellInventory;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -17,12 +17,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -43,8 +43,8 @@ public class DISKDrive extends Item implements IDISKCellItem, AEToolItem {
     private final double idleDrain;
     private final ItemLike coreItem;
 
-    public DISKDrive(ItemLike coreItem, int kilobytes, double idleDrain) {
-        super(new Properties().stacksTo(1).fireResistant().component(AE2Things.DATA_DISK_ITEM_COUNT, 0L)
+    public DISKDrive(Properties properties, ItemLike coreItem, int kilobytes, double idleDrain) {
+        super(properties.stacksTo(1).fireResistant().component(AE2Things.DATA_DISK_ITEM_COUNT, 0L)
                 .component(AE2Things.DATA_FUZZY_MODE, FuzzyMode.IGNORE_ALL));
         this.bytes = kilobytes * 1000;
         this.coreItem = coreItem;
@@ -112,11 +112,16 @@ public class DISKDrive extends Item implements IDISKCellItem, AEToolItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(final Level level, final Player player, final InteractionHand hand) {
-        this.disassembleDrive(player.getItemInHand(hand), level, player);
+    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+        if (this.disassembleDrive(player.getItemInHand(hand), level, player)) {
+            if (level.isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
 
-        return new InteractionResultHolder<>(InteractionResult.sidedSuccess(level.isClientSide()),
-                player.getItemInHand(hand));
+            return InteractionResult.SUCCESS_SERVER;
+        }
+
+        return InteractionResult.PASS;
     }
 
     @Nullable
@@ -133,10 +138,10 @@ public class DISKDrive extends Item implements IDISKCellItem, AEToolItem {
 
             final Inventory playerInventory = player.getInventory();
             var inv = getCellInventory(stack, null);
-            if (inv != null && playerInventory.getSelected() == stack) {
+            if (inv != null && playerInventory.getSelectedItem() == stack) {
                 var list = inv.getAvailableStacks();
                 if (list.isEmpty()) {
-                    playerInventory.setItem(playerInventory.selected, ItemStack.EMPTY);
+                    playerInventory.setItem(playerInventory.getSelectedSlot(), ItemStack.EMPTY);
 
                     // drop core
                     playerInventory.placeItemBackInInventory(new ItemStack(coreItem));
@@ -158,16 +163,20 @@ public class DISKDrive extends Item implements IDISKCellItem, AEToolItem {
 
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
-        return this.disassembleDrive(stack, context.getLevel(), context.getPlayer())
-                ? InteractionResult.sidedSuccess(context.getLevel().isClientSide())
-                : InteractionResult.PASS;
+        if (this.disassembleDrive(stack, context.getLevel(), context.getPlayer())) {
+            if (context.getLevel().isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
+
+            return InteractionResult.SUCCESS_SERVER;
+        }
+
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip,
-            TooltipFlag tooltipFlag) {
-        tooltip.add(Component.literal("Deep Item Storage disK - Storage for dummies")
-                .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltip, TooltipFlag tooltipFlag) {
+        tooltip.accept(Component.literal("Deep Item Storage disK - Storage for dummies").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         addCellInformationToTooltip(stack, tooltip);
     }
 

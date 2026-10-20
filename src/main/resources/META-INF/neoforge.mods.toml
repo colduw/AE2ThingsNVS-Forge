@@ -61,6 +61,6 @@ config="mixins.ae2things.json"
 [[dependencies.ae2things]]
     modId="ae2"
     type="required"
-    versionRange = "[19.0.0-beta, 20.0.0)"
+    versionRange = "[26,)"
     ordering="AFTER"
     side="BOTH"

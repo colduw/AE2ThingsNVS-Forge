@@ -2,7 +2,6 @@ package io.github.projectet.ae2things.util;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 
 public class DataStorage {
 
@@ -39,9 +38,9 @@ public class DataStorage {
     }
 
     public static DataStorage fromNbt(CompoundTag nbt) {
-        ListTag stackKeys = nbt.getList(STACK_KEYS, Tag.TAG_COMPOUND);
-        long[] stackAmounts = nbt.getLongArray(STACK_AMOUNTS);
-        long itemCount = nbt.getLong(ITEM_COUNT_TAG);
+        ListTag stackKeys = nbt.getList(STACK_KEYS).get();
+        long[] stackAmounts = nbt.getLongArray(STACK_AMOUNTS).get();
+        long itemCount = nbt.getLong(ITEM_COUNT_TAG).get();
 
         return new DataStorage(stackKeys, stackAmounts, itemCount);
     }
